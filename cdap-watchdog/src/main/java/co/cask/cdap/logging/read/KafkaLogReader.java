@@ -49,7 +49,6 @@ public class KafkaLogReader implements LogReader {
 
   private final BrokerService brokerService;
   private final String topic;
-  private final LoggingEventSerializer serializer;
   private final StringPartitioner partitioner;
 
   /**
@@ -63,7 +62,6 @@ public class KafkaLogReader implements LogReader {
     Preconditions.checkArgument(!this.topic.isEmpty(), "Kafka topic is empty!");
 
     this.partitioner = partitioner;
-    this.serializer = new LoggingEventSerializer();
   }
 
   @Override
@@ -100,8 +98,8 @@ public class KafkaLogReader implements LogReader {
         return;
       }
 
-      KafkaCallback kafkaCallback = new KafkaCallback(logFilter, serializer, latestOffset, maxEvents, callback,
-                                                      readRange.getFromMillis());
+      KafkaCallback kafkaCallback = new KafkaCallback(logFilter, new LoggingEventSerializer(), latestOffset, maxEvents,
+                                                      callback, readRange.getFromMillis());
 
       fetchLogEvents(kafkaConsumer, kafkaCallback, startOffset, latestOffset, maxEvents, readRange);
     } catch (Throwable e) {
@@ -156,8 +154,8 @@ public class KafkaLogReader implements LogReader {
         return;
       }
 
-      KafkaCallback kafkaCallback = new KafkaCallback(logFilter, serializer, stopOffset, maxEvents, callback,
-                                                      readRange.getFromMillis());
+      KafkaCallback kafkaCallback = new KafkaCallback(logFilter, new LoggingEventSerializer(), stopOffset, maxEvents,
+                                                      callback, readRange.getFromMillis());
 
       // Events between startOffset and stopOffset may not have the required logs we are looking for,
       // we'll need to return at least 1 log offset for next getLogPrev call to work.
